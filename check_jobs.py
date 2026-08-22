@@ -94,7 +94,8 @@ def is_right_location(location: str) -> bool:
 
 # --- ATS fetchers ------------------------------------------------------------
 
-def fetch_greenhouse(slug: str):
+def fetch_greenhouse(company: dict):
+    slug = company["slug"]
     url = f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=false"
     resp = requests.get(url, timeout=REQUEST_TIMEOUT)
     resp.raise_for_status()
@@ -110,7 +111,8 @@ def fetch_greenhouse(slug: str):
     ]
 
 
-def fetch_lever(slug: str):
+def fetch_lever(company: dict):
+    slug = company["slug"]
     url = f"https://api.lever.co/v0/postings/{slug}?mode=json"
     resp = requests.get(url, timeout=REQUEST_TIMEOUT)
     resp.raise_for_status()
@@ -126,9 +128,49 @@ def fetch_lever(slug: str):
     ]
 
 
+# Search terms used to query Workday, since its public API is search-based
+# rather than "list everything" like Greenhouse/Lever. Kept short to limit
+# the number of requests per company per run.
+WORKDAY_SEARCH_TERMS = [
+    "devops", "cloud engineer", "site reliability",
+    "linux administrator", "system administrator",
+]
+
+
+def fetch_workday(company: dict):
+    host = company["host"]          # e.g. "accenture.wd103.myworkdayjobs.com"
+    site = company["site"]          # e.g. "AccentureCareers"
+    tenant = host.split(".")[0]     # e.g. "accenture"
+    url = f"https://{host}/wday/cxs/{tenant}/{site}/jobs"
+
+    jobs = []
+    seen_paths = set()
+    for term in WORKDAY_SEARCH_TERMS:
+        resp = requests.post(
+            url,
+            json={"appliedFacets": {}, "limit": 20, "offset": 0, "searchText": term},
+            timeout=REQUEST_TIMEOUT,
+        )
+        resp.raise_for_status()
+        postings = resp.json().get("jobPostings", [])
+        for p in postings:
+            path = p.get("externalPath", "")
+            if not path or path in seen_paths:
+                continue
+            seen_paths.add(path)
+            jobs.append({
+                "id": path,
+                "title": p.get("title", ""),
+                "location": p.get("locationsText", ""),
+                "url": f"https://{host}{path}",
+            })
+    return jobs
+
+
 FETCHERS = {
     "greenhouse": fetch_greenhouse,
     "lever": fetch_lever,
+    "workday": fetch_workday,
 }
 
 
@@ -182,7 +224,8 @@ def main():
     for company in companies:
         name = company["name"]
         ats = company["ats"]
-        slug = company["slug"]
+        # State-tracking key: Greenhouse/Lever use "slug", Workday uses "host".
+        state_key = company.get("slug") or company.get("host")
 
         fetcher = FETCHERS.get(ats)
         if not fetcher:
@@ -190,12 +233,12 @@ def main():
             continue
 
         try:
-            jobs = fetcher(slug)
+            jobs = fetcher(company)
         except requests.RequestException as e:
-            print(f"ERROR fetching {name} ({ats}/{slug}): {e}", file=sys.stderr)
+            print(f"ERROR fetching {name} ({ats}/{state_key}): {e}", file=sys.stderr)
             continue
 
-        seen_ids = set(seen.get(slug, []))
+        seen_ids = set(seen.get(state_key, []))
         current_ids = set()
 
         for job in jobs:
@@ -212,7 +255,7 @@ def main():
 
         # Persist all IDs currently on the board (relevant or not) so we
         # never re-alert on a job we've already evaluated once.
-        seen[slug] = list(seen_ids | current_ids)
+        seen[state_key] = list(seen_ids | current_ids)
 
     save_json(SEEN_FILE, seen)
     print(f"Done. {new_alerts} new alert(s) sent.")
