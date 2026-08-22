@@ -43,6 +43,16 @@ EXCLUDE_KEYWORDS = [
 MAX_YEARS_MENTIONED = 4
 YEARS_PATTERN = re.compile(r"(\d+)\s*\+?\s*years?", re.IGNORECASE)
 
+# A job's location must contain at least one of these to pass. This is what
+# stops global companies (Envoy Global, Tide, Capco, etc.) from flooding
+# alerts with US/EU/LATAM roles. "remote" is included since remote-India or
+# remote-APAC roles are often just labeled "Remote" with no country.
+LOCATION_KEYWORDS = [
+    "india", "bengaluru", "bangalore", "hyderabad", "pune", "mumbai",
+    "chennai", "delhi", "gurgaon", "gurugram", "noida", "kolkata",
+    "remote",
+]
+
 
 def is_relevant(title: str) -> bool:
     t = title.lower()
@@ -54,6 +64,11 @@ def is_relevant(title: str) -> bool:
         if int(match) >= MAX_YEARS_MENTIONED:
             return False
     return True
+
+
+def is_right_location(location: str) -> bool:
+    loc = (location or "").lower()
+    return any(k in loc for k in LOCATION_KEYWORDS)
 
 
 # --- ATS fetchers ------------------------------------------------------------
@@ -167,7 +182,9 @@ def main():
             if job["id"] in seen_ids:
                 continue  # already alerted before
             if not is_relevant(job["title"]):
-                continue  # doesn't match our filters
+                continue  # title doesn't match our filters
+            if not is_right_location(job["location"]):
+                continue  # not India / remote
 
             send_telegram(format_alert(name, job))
             new_alerts += 1
