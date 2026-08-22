@@ -26,11 +26,28 @@ REQUEST_TIMEOUT = 15  # seconds
 
 # --- Filtering rules -------------------------------------------------------
 
+# Full-phrase matches — titles containing any of these pass immediately.
 INCLUDE_KEYWORDS = [
-    "devops", "sre", "site reliability", "cloud engineer", "platform engineer",
-    "infrastructure engineer", "system engineer", "systems engineer",
+    "devops", "dev ops",
+    "sre", "site reliability",
+    "cloud engineer", "cloud support", "cloud operations", "cloud infrastructure",
+    "platform engineer",
+    "infrastructure engineer", "infrastructure support",
+    "system engineer", "systems engineer",
+    "system administrator", "systems administrator",
+    "linux administrator", "linux engineer",
+    "production support",
     "build engineer", "release engineer",
 ]
+
+# Fallback: a title also passes if it mentions a relevant technology AND a
+# relevant role word — this catches titles like "AWS Support Engineer" or
+# "Kubernetes Engineer" without needing every exact phrase spelled out above.
+TECH_KEYWORDS = [
+    "aws", "linux", "kubernetes", "terraform", "jenkins", "docker",
+    "azure", "gcp", "ansible", "ci/cd", "cicd",
+]
+ROLE_KEYWORDS = ["engineer", "administrator", "support", "operations", "specialist"]
 
 # Titles containing any of these are dropped, regardless of include matches.
 EXCLUDE_KEYWORDS = [
@@ -56,9 +73,13 @@ LOCATION_KEYWORDS = [
 
 def is_relevant(title: str) -> bool:
     t = title.lower()
-    if not any(k in t for k in INCLUDE_KEYWORDS):
-        return False
     if any(k in t for k in EXCLUDE_KEYWORDS):
+        return False
+    phrase_match = any(k in t for k in INCLUDE_KEYWORDS)
+    tech_role_match = (
+        any(tk in t for tk in TECH_KEYWORDS) and any(rk in t for rk in ROLE_KEYWORDS)
+    )
+    if not (phrase_match or tech_role_match):
         return False
     for match in YEARS_PATTERN.findall(t):
         if int(match) >= MAX_YEARS_MENTIONED:
