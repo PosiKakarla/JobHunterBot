@@ -1,18 +1,29 @@
 [
-  {
-    "name": "Razorpay",
-    "ats": "greenhouse",
-    "slug": "razorpaysoftwareprivatelimited"
-  },
+  { "name": "Razorpay", "ats": "greenhouse", "slug": "razorpaysoftwareprivatelimited" },
   { "name": "Groww", "ats": "greenhouse", "slug": "groww" },
-  {
-    "name": "Definitive Healthcare India",
-    "ats": "greenhouse",
-    "slug": "definitivehcindia"
-  },
+  { "name": "Definitive Healthcare India", "ats": "greenhouse", "slug": "definitivehcindia" },
   { "name": "Bloomreach", "ats": "greenhouse", "slug": "bloomreach" },
   { "name": "Capco", "ats": "greenhouse", "slug": "capco" },
   { "name": "SmartBear", "ats": "greenhouse", "slug": "smartbear" },
   { "name": "Envoy Global", "ats": "greenhouse", "slug": "envoyglobalinc" },
-  { "name": "Tide", "ats": "greenhouse", "slug": "tide" }
+  { "name": "Tide", "ats": "greenhouse", "slug": "tide" },
+  { "name": "Sigmoid", "ats": "greenhouse", "slug": "sigmoid" },
+  { "name": "Cerebras Systems", "ats": "greenhouse", "slug": "cerebrassystems" },
+  { "name": "Degreed", "ats": "greenhouse", "slug": "degreed" },
+  { "name": "Prophecy", "ats": "greenhouse", "slug": "prophecysimpledatalabs" },
+  { "name": "Together AI", "ats": "greenhouse", "slug": "togetherai" },
+  { "name": "Jumio", "ats": "greenhouse", "slug": "jumio" },
+  { "name": "Poppulo", "ats": "greenhouse", "slug": "poppulo" },
+  { "name": "Hyreo", "ats": "greenhouse", "slug": "hyreo" },
+  { "name": "Meesho", "ats": "lever", "slug": "meesho" },
+  { "name": "Rackspace", "ats": "lever", "slug": "rackspace" },
+  { "name": "Dun & Bradstreet", "ats": "lever", "slug": "dnb" },
+  { "name": "Perforce", "ats": "lever", "slug": "perforce" },
+  { "name": "Postman", "ats": "greenhouse", "slug": "postman" },
+  { "name": "Innovaccer", "ats": "greenhouse", "slug": "innovaccer" },
+  { "name": "Adyen", "ats": "greenhouse", "slug": "adyen" },
+  { "name": "Diligent Corporation", "ats": "greenhouse", "slug": "diligentcorporation" },
+  { "name": "Samsara", "ats": "greenhouse", "slug": "samsara" },
+  { "name": "South Star Software", "ats": "greenhouse", "slug": "southstarcareers" },
+  { "name": "Accenture", "ats": "workday", "host": "accenture.wd103.myworkdayjobs.com", "site": "AccentureCareers" }
 ]
